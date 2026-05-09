@@ -1,3 +1,21 @@
+## [2026-05-09] plan-v2 implement-from-plan (smoke script + docs)
+
+### What shipped
+
+- `cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh` — Phase 0 with
+  `SKIP_LIVE=1`; optional Phase 4 live evaluate; optional Phase 2–3 when
+  `VLLM_API_BASE` + `GEPA_REFLECTION_MODEL` are set.
+- Doc updates: `plan-v2.md` (automation table), `VALIDATION.md` (plan-v2 stub +
+  script PASS), `code.md` (plan-v2 cross-ref), `ARCH.md`, `CLAUDE.md`,
+  `TODO.md`, `optimizer/README.md`.
+
+### Local verify
+
+- `SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh` from `cuda-ioctl-map/`:
+  PASS.
+
+---
+
 ## [2026-05-09] plan-v1 validation (live + GEPA partial)
 
 ### What ran

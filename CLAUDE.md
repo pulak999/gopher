@@ -31,6 +31,7 @@ opens.
 - Evaluator: `python3 optimizer/evaluate.py` (from `cuda-ioctl-map/`)
 - GEPA driver (optional): `python3 optimizer/gepa_runner.py`
 - Python deps: `pip install -r optimizer/requirements.txt`
+- **plan-v2 smoke:** `cd cuda-ioctl-map && SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh`
 
 ## Conventions
 

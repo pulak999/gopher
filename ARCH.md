@@ -47,6 +47,7 @@ flowchart TD
 | `cuda-ioctl-map/tools/find_handle_offsets.py` | Pair traces → offset JSON |
 | `cuda-ioctl-map/optimizer/evaluate.py` | Live evaluator + metrics export |
 | `cuda-ioctl-map/optimizer/metrics.py` | Parse replay output, diff offsets |
+| `cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh` | [plan-v2.md](plan-v2.md) Phase 0 / 4 / optional 2–3 driver |
 
 ## Data artifacts
 

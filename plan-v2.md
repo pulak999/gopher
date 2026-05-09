@@ -2,7 +2,7 @@
 
 ## Date
 
-2026-05-09 (draft)
+2026-05-09 (draft; automation landed 2026-05-09)
 
 ## Purpose
 
@@ -172,11 +172,26 @@ read-only tokens.
 
 ---
 
+## Automation (shipped)
+
+**[`cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh`](cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh)**
+
+| Env / flag | Effect |
+|------------|--------|
+| `SKIP_LIVE=1` | Phase 0 only: unittest + dry-run + precondition hints (no capture/replay). |
+| *(unset)* | Also runs Phase 4: `evaluate.py` on `harness.yaml` and `harness.smoke2.yaml`. |
+| `VLLM_API_BASE` | e.g. `http://127.0.0.1:8000/v1` — curls `/v1/models` after Phase 4. |
+| `GEPA_REFLECTION_MODEL` | e.g. `openai/<id>` — with `VLLM_API_BASE`, runs `gepa_runner.py` (Phase 3). |
+| `GEPA_MAX_METRIC_CALLS` | Optional; default 12. |
+| `GEPA_API_KEY` | Optional; default `EMPTY`. |
+| `OPT_VENV_PY` | Python for GEPA (default: `optimizer/.venv/bin/python` if present). |
+| `OPT_PY` | Python for unittest/evaluate (default: `python3`). |
+
+---
+
 ## Optional follow-ups (not required for v2 “done”)
 
-1. **Small shell script** `cuda-ioctl-map/optimizer/scripts/smoke_local_llm.sh`
-   that curls `/v1/models`, runs dry-run, then `gepa_runner` with env vars—reduces
-   copy-paste errors.
+1. ~~Small shell script~~ **Done** — `optimizer/scripts/smoke_plan_v2.sh`.
 2. **Rootless container** recipe (Podman + `--device nvidia.com/gpu=…`) if the
    host supports it.
 3. **CI-style** job that only runs Phase 0 + Phase 1 + unittest on a headless

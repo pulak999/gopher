@@ -121,6 +121,18 @@ reflection may fail until keys are configured.
 
 Recorded results for this repo: [VALIDATION.md](../../VALIDATION.md).
 
+## plan-v2 smoke script
+
+Bundled driver for [plan-v2.md](../../plan-v2.md):
+
+```bash
+cd cuda-ioctl-map
+SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh
+```
+
+See the script header for `VLLM_API_BASE`, `GEPA_REFLECTION_MODEL`, and unsetting
+`SKIP_LIVE` for full live + local LLM checks.
+
 ## Notes
 
 - `run.sh` always writes `sniffed/<program_stem>.jsonl`; the evaluator copies

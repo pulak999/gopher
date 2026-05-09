@@ -47,3 +47,20 @@
 | Branch `coding-agent-dev` | Not in remote list | Create at implementation time |
 
 **Conflicts / preconditions:** Live NVIDIA + privileged replay required for full evaluator; unit tests cover metrics parsing only.
+
+---
+
+## Plan cross-reference (`plan-v2.md`) — operational E2E
+
+| plan-v2 phase | In repo / automated | Operator-only |
+|----------------|---------------------|---------------|
+| 0 | `optimizer/scripts/smoke_plan_v2.sh` with `SKIP_LIVE=1` | — |
+| 1 | — | Fresh clone under `$HOME/ioctl-agent-scratch`, `uv venv` |
+| 2 | Script curls `/v1/models` when `VLLM_API_BASE` set | Start vLLM, pick GPU |
+| 3 | Script runs `gepa_runner` when `GEPA_REFLECTION_MODEL` + `VLLM_API_BASE` set | Model id from server |
+| 4 | Script runs `evaluate.py` unless `SKIP_LIVE=1` | GPU + `/dev/nvidia*` access |
+| 5 | Append [VALIDATION.md](VALIDATION.md) | Host notes, vLLM version |
+| 6 | — | `rm -rf` scratch clone |
+
+**Note:** Phases 2–3 require a running OpenAI-compatible server (e.g. vLLM on a
+Titan); the repo cannot start that server for you from CI without GPU runners.

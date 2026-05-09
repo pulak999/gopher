@@ -65,3 +65,25 @@ above.
 **To complete full GEPA smoke:** set `OPENAI_API_KEY` (or other LiteLLM-backed
 credentials for the default model GEPA uses) and re-run with a slightly larger
 `--max-metric-calls` budget so a mutation step can succeed.
+
+---
+
+## plan-v2 — automation and CI-friendly smoke
+
+**Script:** [cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh](cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh)
+
+**Phase 0 (no GPU / no live replay):**
+
+```bash
+cd cuda-ioctl-map
+SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh
+```
+
+**Result (repo agent, 2026-05-09):** `SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh` — **PASS**
+(unittest 6/6 + dry-run `"ok": true`).
+
+**Full plan-v2 on your server:** follow [plan-v2.md](plan-v2.md) Phases 1–6;
+use the script **without** `SKIP_LIVE=1` for Phase 4, and export
+`VLLM_API_BASE` + `GEPA_REFLECTION_MODEL` for Phases 2–3. Append a short row
+here with host SHA, vLLM version, and whether reflection succeeded when you
+complete that run.
