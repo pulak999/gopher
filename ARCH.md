@@ -47,7 +47,8 @@ flowchart TD
 | `cuda-ioctl-map/tools/find_handle_offsets.py` | Pair traces → offset JSON |
 | `cuda-ioctl-map/optimizer/evaluate.py` | Live evaluator + metrics export |
 | `cuda-ioctl-map/optimizer/metrics.py` | Parse replay output, diff offsets |
-| `cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh` | [plan-v2.md](plan-v2.md) Phase 0 / 4 / optional 2–3 driver; uses `OPT_PY` vs `OPT_VENV_PY` so unittest/evaluate and GEPA can use different interpreters if needed |
+| `cuda-ioctl-map/optimizer/scripts/smoke_plan_v2.sh` | [plan-v2.md](plan-v2.md) Phase 0 / 4 / optional 2–3 (vLLM) or Gemini (`GEPA_USE_GEMINI`); uses `OPT_PY` vs `OPT_VENV_PY` so unittest/evaluate and GEPA can use different interpreters if needed |
+| `.github/workflows/optimizer-plan-v2-phase0.yml` | GitHub Actions: `SKIP_LIVE=1` smoke (unittest + `evaluate.py --dry-run`) on Ubuntu; no GPU |
 
 ## Data artifacts
 

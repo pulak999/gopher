@@ -181,11 +181,13 @@ read-only tokens.
 | `SKIP_LIVE=1` | Phase 0 only: unittest + dry-run + precondition hints (no capture/replay). |
 | *(unset)* | Also runs Phase 4: `evaluate.py` on `harness.yaml` and `harness.smoke2.yaml`. |
 | `VLLM_API_BASE` | e.g. `http://127.0.0.1:8000/v1` — curls `/v1/models` after Phase 4. |
-| `GEPA_REFLECTION_MODEL` | e.g. `openai/<id>` — with `VLLM_API_BASE`, runs `gepa_runner.py` (Phase 3). |
+| `GEPA_REFLECTION_MODEL` | With `VLLM_API_BASE`: `openai/<id>`. With `GEPA_USE_GEMINI`: optional override (default `gemini/gemini-2.0-flash`). |
 | `GEPA_MAX_METRIC_CALLS` | Optional; default 12. |
-| `GEPA_API_KEY` | Optional; default `EMPTY`. |
+| `GEPA_API_KEY` | Optional; default `EMPTY` (OpenAI-compatible servers only). |
 | `OPT_VENV_PY` | Python for GEPA (default: `optimizer/.venv/bin/python` if present). |
 | `OPT_PY` | Python for unittest/evaluate (default: `python3`). |
+| `GEPA_USE_GEMINI=1` | After Phase 4, run GEPA Phase 3 via **Gemini** (LiteLLM). Loads `GEMINI_API_KEY` from `GEMINI_KEY_FILE` or default sibling `gpu-virt/gemini-key.txt` if unset. |
+| `GEMINI_KEY_FILE` | Optional path to one-line Gemini key (never commit). |
 
 ---
 
@@ -194,8 +196,10 @@ read-only tokens.
 1. ~~Small shell script~~ **Done** — `optimizer/scripts/smoke_plan_v2.sh`.
 2. **Rootless container** recipe (Podman + `--device nvidia.com/gpu=…`) if the
    host supports it.
-3. **CI-style** job that only runs Phase 0 + Phase 1 + unittest on a headless
-   runner (no GPU)—already partially covered by unittest.
+3. **CI-style** job that only runs Phase 0 + unittest on a headless runner
+   (no GPU)—**done:** `.github/workflows/optimizer-plan-v2-phase0.yml` runs
+   `SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh` (unittest + dry-run).
+   Phase 1 (`uv venv` in scratch) remains manual / self-hosted if desired.
 
 ---
 

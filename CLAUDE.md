@@ -32,7 +32,8 @@ opens.
 - GEPA driver (optional): `python3 optimizer/gepa_runner.py`
 - Python deps: `pip install -r optimizer/requirements.txt`
 - **plan-v2 smoke:** `cd cuda-ioctl-map && SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh`
-  (Phase 0 only). Full plan-v2 (live evaluate + optional local LLM + GEPA) is
+  (Phase 0 only). The same command runs in CI (`.github/workflows/optimizer-plan-v2-phase0.yml`)
+  on pushes and PRs to `main` / `coding-agent-dev`. Full plan-v2 (live evaluate + optional local LLM + GEPA) is
   [plan-v2.md](plan-v2.md); results belong in [VALIDATION.md](VALIDATION.md).
 
 **`smoke_plan_v2.sh` environment (see plan-v2 “Automation” table):**
@@ -45,6 +46,8 @@ opens.
 | `VLLM_API_BASE` | e.g. `http://127.0.0.1:8000/v1` — after live evaluate, curls `…/models`. |
 | `GEPA_REFLECTION_MODEL` | e.g. `openai/<id>` — with `VLLM_API_BASE`, runs GEPA reflection. |
 | `GEPA_MAX_METRIC_CALLS`, `GEPA_API_KEY` | Optional; see script. |
+| `GEPA_USE_GEMINI` | Set to `1` to run Phase 3 with **Gemini** (LiteLLM `gemini/…`). Loads `GEMINI_API_KEY` from env or from `GEMINI_KEY_FILE` / default `gpu-virt/gemini-key.txt` (sibling of `ioctl-cuda-mapping`). |
+| `GEMINI_KEY_FILE` | Optional path to a one-line Gemini API key file (never commit). |
 
 ## Conventions
 

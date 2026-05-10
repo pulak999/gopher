@@ -1,3 +1,26 @@
+## [2026-05-09] plan-v2 — GitHub Actions Phase 0 smoke
+
+### What shipped
+
+- `.github/workflows/optimizer-plan-v2-phase0.yml` — on `push` / `pull_request`
+  to `main` or `coding-agent-dev`, runs `SKIP_LIVE=1
+  ./optimizer/scripts/smoke_plan_v2.sh` from `cuda-ioctl-map/` on
+  `ubuntu-latest` (no GPU).
+
+### Files changed
+
+| File | What changed |
+|------|-------------|
+| `.github/workflows/optimizer-plan-v2-phase0.yml` | New workflow. |
+| `ARCH.md`, `CLAUDE.md`, `TODO.md`, `plan-v2.md` | Document CI. |
+| `code.md` | Delta review for `5438bb4` + CI row in plan cross-ref. |
+
+### Local verify
+
+- `SKIP_LIVE=1 ./optimizer/scripts/smoke_plan_v2.sh`: PASS.
+
+---
+
 ## [2026-05-09] plan-v2 Phase 4 live smoke (dev clone)
 
 ### What ran

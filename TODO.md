@@ -26,7 +26,7 @@
 - [ ] Phase 1 roadmap: generic sniffer device globs + extended JSONL fields
 - [ ] Phase 2: `infer/classify.py` + emitted `spec.json` vs handwritten offsets
 - [ ] Wire GEPA to richer candidate space (thresholds) once inference is configurable
-- [ ] CI workflow (optional): lint + `python3 -m unittest` on optimizer tests
+- [x] CI workflow (optional): `.github/workflows/optimizer-plan-v2-phase0.yml` — `SKIP_LIVE=1` smoke (unittest + dry-run) on Ubuntu
 
 ## Branch
 

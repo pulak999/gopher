@@ -126,3 +126,27 @@ Titan); the repo cannot start that server for you from CI without GPU runners.
 **Conflicts / preconditions:** Plan assumes no sudo for routine steps; replay may still require group membership on `/dev/nvidia*` (not always “rootless”). Plan `GEPA_MAX_METRIC_CALLS` example uses `12`; script default `12`; README snippet showed `8` as optional — all consistent.
 
 **Tests / CI survey:** `python3 -m unittest discover -s optimizer/tests -p 'test_*.py' -v` (6 tests). No `.github/workflows/`.
+
+---
+
+## Code Review — commit 5438bb477e3e089b3247fd82fa281f5f51c6b9db (2026-05-09)
+
+### Delta since `ecfc683` (doc + validation only)
+
+**Changed files:** `VALIDATION.md` (Phase 4 live evidence), `LOG.md`, `TODO.md`, `code.md` (prior section), `ARCH.md` (minor), `CLAUDE.md` (env table for Gemini).
+
+### Phase 1–3 (delta)
+
+- **No executable code changes** in this commit range; optimizer behavior unchanged.
+- **VALIDATION.md** now records a successful full `smoke_plan_v2.sh` (Phase 0+4) on shared dev host with commit SHA and replay counts — aligns with plan-v2 Phase 5 partial completion.
+- **Risk:** None introduced; documentation only.
+
+### Plan cross-reference (`plan-v2.md`) at this commit
+
+| Item | Update |
+|------|--------|
+| Phase 4 live on dev clone | **Logged** in VALIDATION.md (`ecfc683` at time of run; narrative still valid). |
+| Phases 1–3, full Phase 5 row, Phase 6 | Unchanged — operator. |
+| Optional CI (unittest + Phase 0 headless) | `.github/workflows/optimizer-plan-v2-phase0.yml` runs `SKIP_LIVE=1` smoke on `main` / `coding-agent-dev`. |
+
+**Terminal summary:** HEAD advanced to `5438bb4` with validation/docs only; no code path changes. CI workflow for `SKIP_LIVE=1` smoke was the next repo-side follow-up from plan-v2 optional §3 — implemented in commit `183b6d3` (`.github/workflows/optimizer-plan-v2-phase0.yml`).
