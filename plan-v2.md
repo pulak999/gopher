@@ -71,6 +71,10 @@ uv pip install -p optimizer/.venv -r optimizer/requirements.txt
 **Goal:** OpenAI-compatible `/v1` on `127.0.0.1`, model suitable for ~24 GB
 VRAM (see model table in AGENT_SERVER_SETUP).
 
+> **Hulk (this machine):** see [AGENT_SERVER_SETUP.md §4a-hulk](AGENT_SERVER_SETUP.md)
+> for the exact working command (vLLM 0.6.1.post1, `meta-llama/Llama-3.2-1B`,
+> `--dtype half`, `--chat-template`, offline HF cache, and one-time venv fixes).
+
 1. Choose **GPU id** for LLM only (e.g. `CUDA_VISIBLE_DEVICES=0`).
 2. Create or reuse a **separate** venv that has `vllm` installed (may differ
    from optimizer `.venv` if dependency sets clash—both are fine).
@@ -78,14 +82,14 @@ VRAM (see model table in AGENT_SERVER_SETUP).
 
    ```bash
    export CUDA_VISIBLE_DEVICES=0
-   vllm serve meta-llama/Meta-Llama-3.1-8B-Instruct \
+   python -m vllm.entrypoints.openai.api_server \
+     --model meta-llama/Meta-Llama-3.1-8B-Instruct \
      --host 127.0.0.1 --port 8000 \
      --max-model-len 8192
    ```
 
-   Adjust CLI to your installed vLLM version (`vllm serve` vs
-   `python -m vllm.entrypoints.openai.api_server`—use what `vllm --help`
-   shows).
+   Prefer the module form (`python -m vllm.entrypoints.openai.api_server`) over
+   `vllm serve` — the installed binary may have a stale shebang.
 
 4. Record **`model id`** from:
 
@@ -116,6 +120,9 @@ optimizer/.venv/bin/python optimizer/gepa_runner.py \
   --reflection-model 'openai/<EXACT_ID_FROM_/v1/models>' \
   --api-base 'http://127.0.0.1:8000/v1' \
   --api-key 'EMPTY'
+
+# Note: vLLM must be started with --chat-template if the model has no built-in
+# tokenizer chat template (e.g. base models like Llama-3.2-1B). See AGENT_SERVER_SETUP §4a-hulk.
 ```
 
 **Pass criteria:**

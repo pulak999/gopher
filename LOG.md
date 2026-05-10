@@ -1,3 +1,36 @@
+## [2026-05-09] plan-v2 — milestone 3 DONE (local vLLM GEPA reflection)
+
+### What ran
+
+- vLLM 0.6.1.post1 + `meta-llama/Llama-3.2-1B` on GPU 0 (`CUDA_VISIBLE_DEVICES=0`,
+  `HF_HUB_OFFLINE=1`, `--dtype half`, `--chat-template llama_base_chat_template.jinja`).
+- `gepa_runner.py --max-metric-calls 6 --reflection-model openai/meta-llama/Llama-3.2-1B
+  --api-base http://127.0.0.1:8000/v1 --api-key EMPTY`.
+- Iteration 0: evaluator scored seed harness ~0.778. Iterations 1–3: LLM called and
+  returned HTTP 200 each time (outlines/venv issues fully resolved). Proposed texts
+  scored −1.0 (1B base model, not instruct-tuned); seed kept as best.
+- Plan-v2 milestone 3 **satisfied** — reflection round-trip proven end-to-end.
+- `coding-agent-dev` merged to `main` (commit `58b3191`).
+
+### Files changed
+
+| File | What changed |
+|------|-------------|
+| [cuda-ioctl-map/optimizer/scripts/llama_base_chat_template.jinja](cuda-ioctl-map/optimizer/scripts/llama_base_chat_template.jinja) | New: minimal Human/Assistant Jinja2 chat template for base LLMs. |
+| [AGENT_SERVER_SETUP.md](AGENT_SERVER_SETUP.md) | §4a-hulk: correct model (Llama-3.2-1B), one-time venv fixes (numpy<2, pyairports stub). |
+| [VALIDATION.md](VALIDATION.md) | New section "Phase 3 (GEPA + local vLLM)" with reproduction steps and outcome. |
+| [TODO.md](TODO.md) | Milestone 3 checked off; follow-up items added. |
+
+### Functions / fixes
+
+| Fix | Location | Notes |
+|-----|----------|-------|
+| numpy<2 downgrade | vllm venv | `outlines 0.0.46` requires `numpy.lib.function_base` removed in numpy 2.0. |
+| pyairports stub | vllm venv | PyPI `pyairports 0.0.1` installs a `sample` module, not `pyairports`; created empty stub. |
+| llama_base_chat_template.jinja | optimizer/scripts/ | `transformers v4.44+` requires explicit chat template; Llama-3.2-1B base has none. |
+
+---
+
 ## [2026-05-09] plan-v2 — GEPA + Gemini smoke (Phase 4 + Phase 3 attempt)
 
 ### What ran
