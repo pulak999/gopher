@@ -226,3 +226,56 @@ optimizer/.venv/bin/python optimizer/gepa_runner.py \
 
 **Wall time:** ~90 s for 6 metric-call budget (each call runs full live
 evaluate: capture + infer + replay).
+
+### Phase 3 (GEPA + Qwen2.5-7B-Instruct) — dev clone, 2026-05-10
+
+**Host:** shared login node, same tree; 3× NVIDIA TITAN RTX.
+
+**Commit:** `58b3191` branch `main` (latest at time of run).
+
+**Setup:**
+
+- `Qwen/Qwen2.5-7B-Instruct` downloaded via `HF_HUB_DISABLE_XET=1` + `HF_HOME=/tmp/hf_pm3371`
+  (NFS quota on `bronze:/student/pm3371` too tight; xet-protocol left incomplete blobs;
+  `/tmp` had ~30 GB free).
+- vLLM flags: `--enforce-eager --max-model-len 16384 --dtype half`.
+  `--enforce-eager` was required: without it, CUDA graph pre-allocation consumed all VRAM
+  headroom beyond the ~14 GB model weights, leaving only 382×16 = 6,112 KV-cache tokens.
+
+**Seed harness:** `optimizer/harness.gepa_seed.yaml` (cu_init + cu_mem_alloc; baseline
+aggregate score 0.8889).
+
+**Command (Terminal 2):**
+
+```bash
+cd cuda-ioctl-map
+optimizer/.venv/bin/python optimizer/gepa_runner.py \
+  --seed optimizer/harness.gepa_seed.yaml \
+  --max-metric-calls 10 \
+  --reflection-model 'openai/Qwen/Qwen2.5-7B-Instruct' \
+  --api-base http://127.0.0.1:8000/v1 \
+  --api-key EMPTY
+```
+
+**Result:**
+
+- **Iteration 0:** evaluator scored seed harness (`aggregate_score` 0.8889).
+- **Iteration 1:** Qwen proposed adding `programs/cu_ctx_create.cu` — a valid program from
+  the available list.  Subsample score **0.8926** > 0.8889; accepted as best candidate.
+- **Iterations 2–7:** `ContextWindowExceededError` — GEPA accumulates candidate history in
+  the reflection prompt; with two-program evaluations (~780 ioctl lines per capture) the
+  prompt grew to ~19–20 k tokens, exceeding the 16384-token limit.  No further candidates
+  accepted.
+- **Iteration 8–9:** vLLM server stopped (connection refused; OOM or process killed by the
+  server's resource monitor after heavy use).
+- **`best_candidate`:** `harness.gepa_seed.yaml` with `cu_ctx_create.cu` added (score 0.8926).
+
+**Key outcome:** Qwen2.5-7B-Instruct produced a **genuine, valid improvement** on the first
+reflection step.  The context-overflow problem is a GEPA internal issue (not a vLLM or
+CUDA issue); mitigation is `--max-metric-calls 3` so only the first reflection fires before
+history overflows.
+
+**Wall time:** ~120 s (10 metric calls; iterations 2–9 fast-failed on context errors).
+
+**Follow-up:** update `harness.gepa_seed.yaml` to include `cu_ctx_create.cu` so the next
+run starts from the improved baseline (0.8926).

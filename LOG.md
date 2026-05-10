@@ -1,3 +1,39 @@
+## [2026-05-10] GEPA + Qwen2.5-7B-Instruct — first useful YAML proposal
+
+### What ran
+
+- vLLM 0.6.1.post1 + `Qwen/Qwen2.5-7B-Instruct` on GPU 0 (`--enforce-eager --max-model-len 16384
+  --dtype half`, `HF_HOME=/tmp/hf_pm3371`).
+- `gepa_runner.py --seed optimizer/harness.gepa_seed.yaml --max-metric-calls 10
+  --reflection-model openai/Qwen/Qwen2.5-7B-Instruct`.
+- Iteration 0: seed scored 0.8889 (cu_init + cu_mem_alloc).
+- Iteration 1: Qwen proposed `cu_ctx_create.cu` → score improved to **0.8926** (accepted).
+- Iterations 2–9: `ContextWindowExceededError` (~19-20 k tokens > 16384 limit) — GEPA
+  history grows per iteration; vLLM also died at iteration 8 (connection refused).
+- `best_candidate`: seed + `cu_ctx_create.cu`; updated `harness.gepa_seed.yaml`.
+
+### Files changed
+
+| File | What changed |
+|------|-------------|
+| [cuda-ioctl-map/optimizer/harness.gepa_seed.yaml](cuda-ioctl-map/optimizer/harness.gepa_seed.yaml) | Added `cu_ctx_create.cu` (Qwen-proposed improvement; score 0.8889 → 0.8926). |
+| [AGENT_SERVER_SETUP.md](AGENT_SERVER_SETUP.md) | §4a-hulk: Qwen2.5-7B-Instruct startup command with `--enforce-eager`, `HF_HOME=/tmp/hf_pm3371`; context-overflow note; `--max-metric-calls 3` guidance. |
+| [VALIDATION.md](VALIDATION.md) | New section "Phase 3 (GEPA + Qwen2.5-7B-Instruct)". |
+| [LOG.md](LOG.md) | This entry. |
+| [TODO.md](TODO.md) | Qwen phase checked off; context-overflow follow-up added. |
+
+### Notes
+
+- `--enforce-eager` is required for Qwen2.5-7B-Instruct on 24 GB TITAN RTX: without it, CUDA
+  graph capture consumes all VRAM headroom beyond model weights, leaving only 382 blocks
+  (6,112 tokens) for KV cache.
+- Context overflow is a GEPA-internal issue (history accumulation). Workaround: `--max-metric-calls 3`.
+  A model with 32k+ context (e.g. Qwen2.5-14B or a quantized 70B) would remove the limit.
+- Model was downloaded to `/tmp/hf_pm3371` (NFS home-dir quota; xet-protocol left incomplete blobs;
+  bypass: `HF_HUB_DISABLE_XET=1` + `HF_HOME=/tmp/hf_pm3371`).
+
+---
+
 ## [2026-05-09] plan-v2 — milestone 3 DONE (local vLLM GEPA reflection)
 
 ### What ran

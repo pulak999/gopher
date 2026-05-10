@@ -140,9 +140,11 @@ Hulk (shared login, 3× NVIDIA TITAN RTX, driver 555.42.02, kernel 5.15.0-173):
 - `/dev/nvidia*` permissions: `crw-rw-rw-` — no special group required; any user can replay.
 - **vLLM venv:** `/home/pm3371/gitrepos/gpu-virt/vllm/.venv/` (Python 3.12, vLLM 0.6.1.post1).
   The `vllm` binary has a stale shebang; use the module form instead.
-- **HF model cache** (already downloaded, no network needed):
-  - `meta-llama/Llama-3.2-1B` — complete; used for GEPA reflection on this host.
-  - `Qwen/Qwen2.5-7B-Instruct` — **incomplete** (xet-protocol download failed, `.incomplete` blobs only); do not use.
+- **HF model cache:**
+  - `meta-llama/Llama-3.2-1B` — complete at default HF cache; used for milestone-3 wiring proof.
+  - `Qwen/Qwen2.5-7B-Instruct` — complete at `/tmp/hf_pm3371/` (NFS quota prevented home-dir
+    download; xet-protocol left `.incomplete` blobs; fixed by `HF_HUB_DISABLE_XET=1` download
+    to local `/tmp`).  Set `HF_HOME=/tmp/hf_pm3371` before starting vLLM.
 - **One-time venv fixes** (apply once; the venv is now fixed if you're on the same machine):
   ```bash
   # Fix 1: outlines 0.0.46 requires numpy<2; venv ships numpy 2.4.4
@@ -158,7 +160,7 @@ Hulk (shared login, 3× NVIDIA TITAN RTX, driver 555.42.02, kernel 5.15.0-173):
 - **Chat template** for base models without a built-in tokenizer template:
   `cuda-ioctl-map/optimizer/scripts/llama_base_chat_template.jinja`
 
-**Start vLLM on GPU 0 (separate terminal, from anywhere):**
+**Start vLLM (Llama-3.2-1B, GPU 0 — minimal, wiring proof only):**
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0
@@ -174,18 +176,57 @@ export TRANSFORMERS_OFFLINE=1
   --chat-template /home/pm3371/gitrepos/gpu-virt/ioctl-cuda-mapping/cuda-ioctl-map/optimizer/scripts/llama_base_chat_template.jinja
 ```
 
+**Start vLLM (Qwen2.5-7B-Instruct, GPU 0 — recommended for useful YAML proposals):**
+
+```bash
+export CUDA_VISIBLE_DEVICES=0
+export HF_HOME=/tmp/hf_pm3371        # model cached here; NFS quota too tight for home
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+/home/pm3371/gitrepos/gpu-virt/vllm/.venv/bin/python3 \
+  -m vllm.entrypoints.openai.api_server \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --dtype half \
+  --enforce-eager \
+  --max-model-len 16384 \
+  --host 127.0.0.1 \
+  --port 8000
+```
+
+`--enforce-eager` disables CUDA graph pre-allocation — without it, CUDA graphs consume
+most headroom beyond the 14 GB model weights, leaving only ~6k KV-cache tokens.
+
 Wait for `"Started server process"` / `"Application startup complete"` in the logs.
 Confirm: `curl -s http://127.0.0.1:8000/v1/models | python3 -m json.tool`
 
-**Run full smoke (GPU 1 for CUDA, GPU 0 for LLM) — from `cuda-ioctl-map/`:**
+**GEPA with Qwen (GPU 1 for CUDA, GPU 0 for LLM) — from `cuda-ioctl-map/`:**
+
+```bash
+export CUDA_VISIBLE_DEVICES=1
+cd /home/pm3371/gitrepos/gpu-virt/ioctl-cuda-mapping/cuda-ioctl-map
+optimizer/.venv/bin/python optimizer/gepa_runner.py \
+  --seed optimizer/harness.gepa_seed.yaml \
+  --max-metric-calls 3 \
+  --reflection-model 'openai/Qwen/Qwen2.5-7B-Instruct' \
+  --api-base 'http://127.0.0.1:8000/v1' \
+  --api-key EMPTY
+```
+
+**Context-window note:** GEPA accumulates candidate history in each reflection prompt.
+With the two-program seed (`cu_init` + `cu_mem_alloc`), the prompt reaches ~19 k tokens
+by iteration 2 — beyond the 16384 limit.  Use `--max-metric-calls 3` so the first
+useful reflection (iteration 1) completes before overflow.  A 32 k-context model would
+remove this limit.
+
+**Run full smoke (Phase 0+4) — from `cuda-ioctl-map/`:**
 
 ```bash
 export CUDA_VISIBLE_DEVICES=1   # optional: isolate CUDA capture/replay
 cd /home/pm3371/gitrepos/gpu-virt/ioctl-cuda-mapping/cuda-ioctl-map
 export OPT_PY="$PWD/optimizer/.venv/bin/python"
 export VLLM_API_BASE="http://127.0.0.1:8000/v1"
-export GEPA_REFLECTION_MODEL="openai/meta-llama/Llama-3.2-1B"
-export GEPA_MAX_METRIC_CALLS=8
+export GEPA_REFLECTION_MODEL="openai/Qwen/Qwen2.5-7B-Instruct"
+export GEPA_MAX_METRIC_CALLS=3
 ./optimizer/scripts/smoke_plan_v2.sh
 ```
 

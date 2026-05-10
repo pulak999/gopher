@@ -1,0 +1,34 @@
+# Optimizer harness — paths are relative to cuda-ioctl-map/
+#
+# Live mode runs: capture ×2 → find_handle_offsets → replay (baseline vs candidate).
+#
+# AVAILABLE programs (all exist under programs/):
+#   programs/cu_init.cu          — cuInit only; 230 ioctls; baseline score ~0.78
+#   programs/cu_mem_alloc.cu     — cuInit + cuMemAlloc; 781 ioctls; score ~1.0
+#   programs/cu_ctx_create.cu    — cuInit + cuCtxCreate
+#   programs/cu_ctx_destroy.cu   — cuInit + cuCtxCreate + cuCtxDestroy
+#   programs/cu_device_get.cu    — cuInit + cuDeviceGet
+#   programs/cu_launch_null.cu   — cuInit + kernel launch (null kernel)
+#   programs/cu_memcpy.cu        — cuInit + cuMemAlloc + cuMemcpy
+#   programs/cu_module_load.cu   — cuInit + cuModuleLoad
+#   programs/matmul.cu           — matrix multiply (uses CUBLAS)
+#   programs/vector_add.cu       — simple vector add kernel
+#
+# SCORE: aggregate_score = mean of per-program offset_agreement_ratio.
+# To improve: add programs that replay cleanly AND reveal new handle offsets.
+# Do NOT add programs not listed above — they do not exist and will fail.
+
+programs:
+  - programs/cu_init.cu
+  - programs/cu_mem_alloc.cu
+  - programs/cu_ctx_create.cu
+
+baseline_offsets: intercept/handle_offsets.json
+runs_dir: optimizer/runs
+
+timeout_capture_sec: 600
+timeout_replay_sec: 1800
+replay_verbose: false
+
+# Candidate replay must not increase skips vs baseline replay (same trace).
+max_skip_regression: 0

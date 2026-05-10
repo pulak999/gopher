@@ -24,8 +24,12 @@
       reflection iterations completed end-to-end (HTTP 200 from LLM each time).
       Model quality insufficient to improve harness (1B base), but wiring proven.
       See [VALIDATION.md](VALIDATION.md) "Phase 3 (GEPA + local vLLM)".
-- [ ] Optional Phase 5 follow-up: repeat Phase 3 with a stronger instruct model
-      (8B+) once Qwen cache is repaired or another model is downloaded.
+- [x] **Phase 3 (Qwen2.5-7B-Instruct) — 2026-05-10:** downloaded to `/tmp/hf_pm3371`;
+      vLLM `--enforce-eager --max-model-len 16384`; GEPA iteration 1 proposed
+      `cu_ctx_create.cu` → score 0.8889 → **0.8926**; accepted; `harness.gepa_seed.yaml`
+      updated.  Iterations 2+ hit context-window overflow (~19k tokens > 16384 limit).
+- [ ] GEPA context overflow: GEPA history accumulates per iteration; mitigate with
+      `--max-metric-calls 3` or use a 32k+ context model (Qwen2.5-14B, quantized 70B).
 - [ ] Phase 6 (scratch clone cleanup): operator step after throwaway clone run.
 - [x] **Phase 3 (Gemini path) — smoke attempt (2026-05-09):** documented in
       [VALIDATION.md](VALIDATION.md); reflection blocked by Gemini **429**
